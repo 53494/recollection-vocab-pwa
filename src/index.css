@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* ---- Recollection 全局样式 ---- */
+
+/* 色彩 Token（Tailwind v4 用 @theme 扩展） */
+@theme {
+  --color-ink: #1A1A1A;
+  --color-ink-light: #4B5563;
+  --color-ink-muted: #9CA3AF;
+  --color-paper: #FFFFFF;
+  --color-paper-off: #F9FAFB;
+  --color-rule: #E5E7EB;
+  --color-accent: #1A1A1A;
+  --color-word: #F59E0B;
+}
+
+/* 基础样式 */
+html {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  line-height: 1.6;
+}
+
+/* 底部安全区域适配 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 弹出动画 */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
