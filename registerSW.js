@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/recollection-vocab-pwa/sw.js', { scope: '/recollection-vocab-pwa/' })})}
