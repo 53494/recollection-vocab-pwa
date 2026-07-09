@@ -7,25 +7,17 @@ import { createAppRouter } from './routes';
 export function App() {
   const { ready, error } = useDBReady();
   const [splashDone, setSplashDone] = useState(false);
-  const [initialPath, setInitialPath] = useState<string | null>(null);
 
-  // 封面点击 → 决定去引导页还是首页
+  // 封面点击 → 直接跳转到目标页面（让 Router 从正确的 URL 启动）
   function handleEnter() {
     const onboarded = localStorage.getItem('recollection_onboarded');
-    const path = onboarded === 'true' ? '/' : '/welcome';
-    setInitialPath(path);
-    setSplashDone(true);
+    const route = onboarded === 'true' ? '/' : '/welcome';
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    window.location.href = base + route;
   }
 
-  // 在挂载 Router 前，把 URL 改成目标路径
-  const router = useMemo(() => {
-    if (initialPath) {
-      window.history.replaceState(null, '', initialPath);
-    }
-    return createAppRouter();
-  }, [initialPath]);
+  const router = useMemo(() => createAppRouter(), []);
 
-  // 错误
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#1E1E1E' }}>
@@ -43,16 +35,16 @@ export function App() {
     );
   }
 
-  // 等待
-  if (!ready || !splashDone) {
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#1E1E1E' }}>
-        {ready
-          ? <SplashScreen onEnter={handleEnter} />
-          : <p className="text-white/40 text-sm">Loading...</p>
-        }
+        <p className="text-white/40 text-sm">Loading...</p>
       </div>
     );
+  }
+
+  if (!splashDone) {
+    return <SplashScreen onEnter={handleEnter} />;
   }
 
   return <RouterProvider router={router} />;
