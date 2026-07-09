@@ -37,6 +37,7 @@ function Lazy(Comp: React.LazyExoticComponent<() => JSX.Element>) {
 }
 
 export function createAppRouter() {
+  const basename = import.meta.env.BASE_URL;
   return createBrowserRouter([
     {
       path: '/',
@@ -60,5 +61,5 @@ export function createAppRouter() {
         { path: 'settings', element: Lazy(SettingsPage) },
       ],
     },
-  ]);
+  ], { basename: basename === '/' ? undefined : basename });
 }
