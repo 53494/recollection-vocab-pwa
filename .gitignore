@@ -7,9 +7,8 @@ recollection.env.example
 # 依赖文件夹
 node_modules/
 
-# Vite打包产物
+# Vite 本地打包产物
 dist/
-docs/
 
 # TS编译缓存
 *.tsbuildinfo
