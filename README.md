@@ -26,4 +26,18 @@ vite-plugin-pwa + Workbox（离线PWA能力）
 ## 本地完整运行教程
 1. 克隆项目至本地
 ```bash
-git clone https://53494.github.io/recollection-vocab-pwa.git
+git clone https://github.com/53494/recollection-vocab-pwa.git
+```
+
+## 部署说明
+
+### GitHub Pages
+
+- 保持 [vite.config.ts](vite.config.ts) 中的 `base` 为 `/recollection-vocab-pwa/`。
+- 可以发布 `docs` 目录，或通过 GitHub Actions 执行构建并发布构建产物。
+
+### Vercel / Netlify / Cloudflare Pages
+
+- 将 Vite 的 `base` 设置为 `/`。
+- Build Command：`npm run build`
+- Output Directory：`dist`

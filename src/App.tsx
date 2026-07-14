@@ -8,15 +8,14 @@ export function App() {
   const { ready, error } = useDBReady();
   const [splashDone, setSplashDone] = useState(false);
 
-  // 封面点击 → 直接跳转到目标页面（让 Router 从正确的 URL 启动）
+  const router = useMemo(() => createAppRouter(), []);
+
+  // 封面点击后交给 React Router 跳转，保留 Vite base 路径和 Hash 路由状态
   function handleEnter() {
     const onboarded = localStorage.getItem('recollection_onboarded');
-    const route = onboarded === 'true' ? '/' : '/welcome';
-    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-    window.location.href = base + route;
+    setSplashDone(true);
+    void router.navigate(onboarded === 'true' ? '/' : '/welcome');
   }
-
-  const router = useMemo(() => createAppRouter(), []);
 
   if (error) {
     return (

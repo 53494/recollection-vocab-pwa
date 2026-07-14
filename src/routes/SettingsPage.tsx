@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
 import { hasApiKey, setApiKey } from '../services/aiService';
 import { t, getLang, setLang, type Lang } from '../services/i18n';
@@ -6,6 +7,8 @@ import { useThemeStore, ACCENT_PRESETS, SPLASH_PRESETS, type ThemeMode } from '.
 import { useActiveBookStore, type DailyGoal } from '../stores/useActiveBookStore';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
+
   /* ---- API Key ---- */
   const [key, setKey] = useState('');
   const [showKeyInput, setShowKeyInput] = useState(false);
@@ -313,7 +316,7 @@ export default function SettingsPage() {
       <button
         onClick={() => {
           localStorage.removeItem('recollection_guide_seen');
-          window.location.href = '/';
+          navigate('/');
         }}
         className="w-full py-2.5 rounded-full border border-rule text-sm text-ink-light cursor-pointer hover:border-ink/30"
       >
