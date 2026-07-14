@@ -1,28 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
-import { hasApiKey, setApiKey } from '../services/aiService';
 import { t, getLang, setLang, type Lang } from '../services/i18n';
 import { useThemeStore, ACCENT_PRESETS, SPLASH_PRESETS, type ThemeMode } from '../stores/useThemeStore';
 import { useActiveBookStore, type DailyGoal } from '../stores/useActiveBookStore';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-
-  /* ---- API Key ---- */
-  const [key, setKey] = useState('');
-  const [showKeyInput, setShowKeyInput] = useState(false);
-  const [keySaved, setKeySaved] = useState(false);
-
-  useEffect(() => {
-    setShowKeyInput(!hasApiKey());
-  }, []);
-
-  function handleSaveKey() {
-    setApiKey(key.trim());
-    setKeySaved(true);
-    setTimeout(() => { setKeySaved(false); setShowKeyInput(false); }, 800);
-  }
 
   /* ---- 主题 ---- */
   const { mode, accentColor, splashColor, setMode, setAccentColor, setSplashColor } = useThemeStore();
@@ -95,36 +79,6 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-8">
-      {/* ======== API Key ======== */}
-      <div className="bg-paper rounded-2xl border border-rule p-5">
-        <h3 className="text-sm font-medium text-ink mb-3">{t('settings.api')}</h3>
-        {!showKeyInput ? (
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-green-600 font-medium">{t('settings.apiReady')}</span>
-            <button onClick={() => setShowKeyInput(true)}
-              className="text-xs text-ink-muted underline cursor-pointer hover:text-ink">
-              {t('settings.change')}
-            </button>
-          </div>
-        ) : (
-          <div>
-            <input type="password" value={key}
-              onChange={(e) => setKey(e.target.value)}
-              placeholder="sk-xxxxxxxxxxxxxxxx"
-              className="w-full px-4 py-2.5 rounded-xl border border-rule bg-paper-off text-sm
-                focus:outline-none focus:border-ink transition-colors" />
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-ink-muted">{t('settings.local')}</span>
-              <button onClick={handleSaveKey} disabled={!key.trim()}
-                className={`px-5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer
-                  ${keySaved ? 'bg-green-100 text-green-700' : 'bg-ink text-paper hover:opacity-90'}`}>
-                {keySaved ? t('settings.saved') : t('settings.save')}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* ======== 主题 ======== */}
       <div className="bg-paper rounded-2xl border border-rule p-5">
         <h3 className="text-sm font-medium text-ink mb-3">{t('settings.theme')}</h3>
