@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 import { AppLayout } from '../components/layout/AppLayout';
 
 /* ---- 懒加载 ---- */
@@ -38,7 +38,7 @@ function Lazy(Comp: React.LazyExoticComponent<() => JSX.Element>) {
 
 export function createAppRouter() {
   const basename = import.meta.env.BASE_URL;
-  return createBrowserRouter([
+  return createHashRouter([
     {
       path: '/',
       element: <AppLayout />,
@@ -61,5 +61,5 @@ export function createAppRouter() {
         { path: 'settings', element: Lazy(SettingsPage) },
       ],
     },
-  ], { basename: basename === '/' ? undefined : basename });
+  ]);
 }

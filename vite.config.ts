@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
-  base: '/recollection-vocab-pwa/' ,
+export default defineConfig(({ mode }) => { 
+  return {
+    // 开发环境 / 生产环境区分base路径
+  base: mode === 'production' ? '/recollection-vocab-pwa/' : '/',
   plugins: [
     tailwindcss(),
     react(),
@@ -38,4 +40,5 @@ export default defineConfig({
       },
     }),
   ],
+  };
 });
