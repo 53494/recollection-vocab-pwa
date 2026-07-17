@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Word } from '../../types/word';
 import { SpeakerButton } from '../shared/SpeakerButton';
+import { createWordFormsRegex } from '../../utils/wordForms';
+import { speakEnglish } from '../../services/speechService';
 
 interface WordCardProps {
   word: Word;
@@ -8,25 +10,10 @@ interface WordCardProps {
   onToggleBookmark: (sentenceIndex: number) => void;
 }
 
-/**
- * 将文本中的目标词及常见变形用 <mark> 高亮
- *
- * 覆盖的变形：
- *  - 规则复数/三单: +s, +es
- *  - 规则过去式: +ed, +d
- *  - 现在分词: +ing（含 e-脱落，如 accommodate → accommodating）
- */
+/** 将文本中的目标词及常见规则变形用 <mark> 高亮。 */
 function highlightWord(text: string, target: string): React.ReactNode {
-  if (!target) return text;
-
-  const w = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');       // 转义正则特殊字符
-  const stem = target.endsWith('e') ? w.slice(0, -1) : w;         // 去 e 词干（如 "accommodate" → "accommodat"）
-
-  // 匹配模式：
-  //   原词 + s/es/d          → abandons, accommodates, accommodated
-  //   词干 + ed/ing          → accommodated, accommodating
-  const pattern = `\\b(${w}(?:s|es|d)?|${stem}(?:ed|ing))\\b`;
-  const regex = new RegExp(pattern, 'gi');
+  const regex = createWordFormsRegex(target);
+  if (!regex) return text;
 
   const children: React.ReactNode[] = [];
   let cursor = 0;
@@ -76,11 +63,7 @@ export function WordCard({ word, bookmarks, onToggleBookmark }: WordCardProps) {
   function goPrev() { setActiveSentence((prev) => (prev - 1 + total) % total); }
 
   function speakSentence() {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(current.english);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85;
-    window.speechSynthesis.speak(utterance);
+    speakEnglish(current.english);
   }
 
   const isBookmarked = bookmarks.get(activeSentence) ?? false;

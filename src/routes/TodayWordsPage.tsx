@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
 import { getDueWordIds } from '../services/dataService';
 import type { Word } from '../types/word';
+import { speakEnglish } from '../services/speechService';
 
 export default function TodayWordsPage() {
   const navigate = useNavigate();
@@ -30,10 +31,7 @@ export default function TodayWordsPage() {
   }, []);
 
   function speak(word: string) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US'; u.rate = 0.85;
-    window.speechSynthesis.speak(u);
+    speakEnglish(word);
   }
 
   function handleSpellSubmit() {

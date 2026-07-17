@@ -27,16 +27,6 @@ export default defineConfig(({ mode }) => {
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.deepseek\.com\/.*/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'ai-api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
-            },
-          },
-        ],
       },
     }),
   ],

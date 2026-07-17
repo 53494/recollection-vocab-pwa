@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
-import { checkTranslation, hasApiKey, AIServiceError } from '../services/aiService';
+import { checkTranslation, AIServiceError } from '../services/aiService';
 import { incrementTodayLog } from '../services/dataService';
 import { useReviewStore, type ReviewSentenceItem } from '../stores/useReviewStore';
 import type { ReviewEntry } from '../types/review';
@@ -58,12 +58,6 @@ export default function ReviewSessionPage() {
   const handleSubmit = useCallback(async () => {
     const trimmed = userAnswer.trim();
     if (!trimmed) return;
-
-    // 检查 API Key
-    if (!hasApiKey()) {
-      setError('请先在设置页面配置 DeepSeek API Key');
-      return;
-    }
 
     setSubmitting(true);
     setError(null);

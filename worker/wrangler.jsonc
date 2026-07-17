@@ -1,0 +1,11 @@
+{
+  "name": "recollection-ai-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-17",
+  "workers_dev": true,
+  "vars": {
+    "UPSTREAM_BASE_URL": "https://api.avemujica.moe",
+    "UPSTREAM_MODEL": "gpt-5.6-sol",
+    "ALLOWED_ORIGINS": "https://53494.github.io,http://localhost:5173,http://127.0.0.1:5173"
+  }
+}

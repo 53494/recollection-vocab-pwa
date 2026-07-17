@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { speakEnglish } from '../../services/speechService';
 
 interface SpeakerButtonProps {
   text: string;      // 要朗读的文字
@@ -13,18 +14,14 @@ export function SpeakerButton({ text, lang = 'en-US', size = 'md' }: SpeakerButt
   const [playing, setPlaying] = useState(false);
 
   function speak() {
-    if (playing) return; // 防止连点
+    if (playing) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang;
-    utterance.rate = 0.85;  // 稍慢，更清晰
-
-    utterance.onstart = () => setPlaying(true);
-    utterance.onend = () => setPlaying(false);
-    utterance.onerror = () => setPlaying(false);
-
-    window.speechSynthesis.cancel(); // 取消之前的朗读
-    window.speechSynthesis.speak(utterance);
+    speakEnglish(text, {
+      lang,
+      onStart: () => setPlaying(true),
+      onEnd: () => setPlaying(false),
+      onError: () => setPlaying(false),
+    });
   }
 
   const sizeClass = size === 'sm' ? 'w-9 h-9' : 'w-11 h-11';

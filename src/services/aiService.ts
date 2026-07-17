@@ -1,22 +1,11 @@
 import type { AIFeedback } from '../types/ai';
-import { REVIEW_CHECK_SYSTEM_PROMPT, buildReviewCheckPrompt } from './promptTemplates';
 
-const DEEPSEEK_BASE = 'https://api.deepseek.com/v1';
+const DEFAULT_AI_PROXY_URL = 'https://recollection-ai-proxy.894721114.workers.dev';
+const AI_PROXY_URL = (import.meta.env.VITE_AI_PROXY_URL || DEFAULT_AI_PROXY_URL).replace(/\/+$/, '');
+const REQUEST_TIMEOUT_MS = 35_000;
 
-/** 从 localStorage 获取 API Key */
-function getApiKey(): string | null {
-  return localStorage.getItem('recollection_api_key');
-}
-
-/** 设置 API Key */
-export function setApiKey(key: string): void {
-  localStorage.setItem('recollection_api_key', key);
-}
-
-/** 检查是否已配置 API Key */
-export function hasApiKey(): boolean {
-  const key = getApiKey();
-  return key !== null && key.length > 10;
+interface ErrorResponse {
+  error?: string;
 }
 
 /** AI 服务错误 */
@@ -30,74 +19,79 @@ export class AIServiceError extends Error {
   }
 }
 
-/**
- * 调用 DeepSeek API 批改翻译
- */
+function normalizeFeedback(value: unknown): AIFeedback {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AIServiceError(502, 'AI 返回格式异常，请重试');
+  }
+
+  const parsed = value as Partial<AIFeedback>;
+  if (typeof parsed.overallAssessment !== 'string'
+    || typeof parsed.targetWordCorrect !== 'boolean'
+    || typeof parsed.targetWordUsed !== 'string'
+    || !Array.isArray(parsed.unrememberedWords)
+    || !Array.isArray(parsed.grammarIssues)
+    || !Array.isArray(parsed.collocationIssues)
+    || !parsed.originalSentence
+    || typeof parsed.originalSentence.english !== 'string'
+    || !Array.isArray(parsed.originalSentence.idiomaticExpressions)
+    || typeof parsed.score !== 'number') {
+    throw new AIServiceError(502, 'AI 返回字段不完整，请重试');
+  }
+
+  return {
+    overallAssessment: parsed.overallAssessment,
+    targetWordCorrect: parsed.targetWordCorrect,
+    targetWordUsed: parsed.targetWordUsed,
+    unrememberedWords: parsed.unrememberedWords,
+    grammarIssues: parsed.grammarIssues,
+    collocationIssues: parsed.collocationIssues,
+    originalSentence: parsed.originalSentence,
+    suggestedAccumulation: parsed.suggestedAccumulation ?? null,
+    score: Math.max(0, Math.min(100, parsed.score)),
+  };
+}
+
+/** 通过受控服务端代理批改翻译，浏览器不接触上游 API Key。 */
 export async function checkTranslation(args: {
   chineseSentence: string;
   targetWord: string;
   userAnswer: string;
   originalEnglish: string;
 }): Promise<AIFeedback> {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new AIServiceError(0, '请先在设置中配置 DeepSeek API Key');
-  }
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  const response = await fetch(`${DEEPSEEK_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',         // V3 模型（免费额度）
-      messages: [
-        { role: 'system', content: REVIEW_CHECK_SYSTEM_PROMPT },
-        { role: 'user', content: buildReviewCheckPrompt(args) },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.3,
-      max_tokens: 1500,
-    }),
-  });
-
-  if (!response.ok) {
-    let errMsg = `API 请求失败 (${response.status})`;
-    try {
-      const errBody = await response.json();
-      if (errBody.error?.message) errMsg = errBody.error.message;
-    } catch { /* ignore parse errors */ }
-    throw new AIServiceError(response.status, errMsg);
-  }
-
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new AIServiceError(0, 'AI 返回内容为空，请重试');
-  }
-
-  let parsed: AIFeedback;
   try {
-    parsed = JSON.parse(content);
-  } catch {
-    throw new AIServiceError(0, 'AI 返回格式异常，请重试');
-  }
+    const response = await fetch(`${AI_PROXY_URL}/api/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(args),
+      signal: controller.signal,
+      cache: 'no-store',
+    });
 
-  // 字段兜底校验
-  return {
-    overallAssessment: parsed.overallAssessment || '评估完成',
-    targetWordCorrect: parsed.targetWordCorrect ?? false,
-    targetWordUsed: parsed.targetWordUsed || '',
-    unrememberedWords: parsed.unrememberedWords || [],
-    grammarIssues: parsed.grammarIssues || [],
-    collocationIssues: parsed.collocationIssues || [],
-    originalSentence: {
-      english: parsed.originalSentence?.english || '',
-      idiomaticExpressions: parsed.originalSentence?.idiomaticExpressions || [],
-    },
-    suggestedAccumulation: parsed.suggestedAccumulation || null,
-    score: typeof parsed.score === 'number' ? parsed.score : 70,
-  };
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      throw new AIServiceError(response.status || 502, 'AI 服务返回了无法识别的内容');
+    }
+
+    if (!response.ok) {
+      const message = typeof (data as ErrorResponse)?.error === 'string'
+        ? (data as ErrorResponse).error!
+        : `AI 服务请求失败 (${response.status})`;
+      throw new AIServiceError(response.status, message);
+    }
+
+    return normalizeFeedback(data);
+  } catch (error) {
+    if (error instanceof AIServiceError) throw error;
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new AIServiceError(504, 'AI 响应超时，请稍后重试');
+    }
+    throw new AIServiceError(0, '无法连接 AI 服务，请检查网络后重试');
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }

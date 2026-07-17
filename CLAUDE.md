@@ -46,7 +46,7 @@
 - **路由**：React Router 6（13 个页面）
 - **数据库**：Dexie.js（IndexedDB 封装，9 张表）
 - **状态**：Zustand 5（持久化中间件）
-- **AI**：DeepSeek API（V4 Flash 免费模型）
+- **AI**：OpenAI 兼容接口（`gpt-5.6-sol`，通过 Cloudflare Worker 代理）
 - **语音**：Web Speech API
 - **PWA**：vite-plugin-pwa + Workbox
 

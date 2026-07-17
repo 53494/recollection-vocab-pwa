@@ -5,6 +5,7 @@ import { getDueWordIds, incrementTodayLog } from '../services/dataService';
 import { useReviewStore } from '../stores/useReviewStore';
 import type { ReviewEntry } from '../types/review';
 import type { Word } from '../types/word';
+import { speakEnglish } from '../services/speechService';
 
 type Mode = 'choice' | 'spell' | 'spell-done' | 'sentence-list';
 type SentenceSource = { sentenceEnglish: string; sentenceChinese: string; targetWord: string; entryId: string };
@@ -93,10 +94,7 @@ export default function ReviewPage() {
   }
 
   function speak(text: string) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US'; u.rate = 0.85;
-    window.speechSynthesis.speak(u);
+    speakEnglish(text);
   }
 
   function handleSpellSubmit() {

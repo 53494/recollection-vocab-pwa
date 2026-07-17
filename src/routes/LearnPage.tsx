@@ -7,6 +7,7 @@ import { useActiveBookStore } from '../stores/useActiveBookStore';
 import type { Word } from '../types/word';
 import type { LearningProgress } from '../types/learning';
 import { WordCard } from '../components/learn/WordCard';
+import { speakEnglish } from '../services/speechService';
 
 type Phase = 'learning' | 'finished' | 'spelling' | 'spelling-done';
 
@@ -108,10 +109,7 @@ export default function LearnPage() {
   }
 
   function speak(word: string) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US'; u.rate = 0.85;
-    window.speechSynthesis.speak(u);
+    speakEnglish(word);
   }
 
   function handleSpellSubmit() {

@@ -1,5 +1,5 @@
 /**
- * DeepSeek API 的 System Prompt 和 User Prompt 模板
+ * AI 批改的 System Prompt 和 User Prompt 模板（服务端版本见 worker/src/prompt.ts）
  */
 
 export const REVIEW_CHECK_SYSTEM_PROMPT = `你是一位专业的英语教师，正在评估一名中国英语专业学生的翻译练习。

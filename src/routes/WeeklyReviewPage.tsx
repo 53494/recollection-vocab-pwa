@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
 import type { Word } from '../types/word';
+import { speakEnglish } from '../services/speechService';
 
 type Phase = 'recognize' | 'spell' | 'result';
 
@@ -80,8 +81,7 @@ export default function WeeklyReviewPage() {
 
   // === 拼写 ===
   function speak(w: string) {
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(w));
+    speakEnglish(w);
   }
 
   function handleSpellSubmit() {

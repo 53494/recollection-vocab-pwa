@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
 import { getDueWordIds, incrementTodayLog } from '../services/dataService';
 import type { Word } from '../types/word';
+import { speakEnglish, stopSpeaking } from '../services/speechService';
 
 export default function ListenIdentifyPage() {
   const navigate = useNavigate();
@@ -58,16 +59,16 @@ export default function ListenIdentifyPage() {
   }, [index, words, generateOptions]);
 
   function speak(word: string) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US'; u.rate = 0.85;
-    window.speechSynthesis.speak(u);
+    speakEnglish(word);
   }
 
   useEffect(() => {
     if (words.length > 0 && index < words.length) {
-      const t = setTimeout(() => speak(words[index].word), 400);
-      return () => clearTimeout(t);
+      const t = window.setTimeout(() => speakEnglish(words[index].word), 400);
+      return () => {
+        window.clearTimeout(t);
+        stopSpeaking();
+      };
     }
   }, [index, words]);
 

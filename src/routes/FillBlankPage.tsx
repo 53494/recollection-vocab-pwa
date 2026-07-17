@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../db/schema';
 import { getDueWordIds, getBookmarkedSentences, incrementTodayLog } from '../services/dataService';
 import type { Word } from '../types/word';
+import { replaceWordForms } from '../utils/wordForms';
+import { speakEnglish } from '../services/speechService';
 
 export default function FillBlankPage() {
   const navigate = useNavigate();
@@ -51,10 +53,7 @@ export default function FillBlankPage() {
   }, [index, submitted]);
 
   function speak(sentence: string) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(sentence);
-    u.lang = 'en-US'; u.rate = 0.8;
-    window.speechSynthesis.speak(u);
+    speakEnglish(sentence, { rate: 0.8 });
   }
 
   function handleSubmit() {
@@ -181,8 +180,8 @@ export default function FillBlankPage() {
 
   const word = words[index];
   const sentence = sentences[index];
-  // 挖空目标词
-  const blanked = sentence.replace(new RegExp(`\\b${word.word}\\b`, 'gi'), '＿＿＿＿＿');
+  // 挖空目标词及其规则变形
+  const blanked = replaceWordForms(sentence, word.word, '＿＿＿＿＿');
 
   return (
     <div className="flex flex-col gap-5 max-w-md mx-auto w-full">

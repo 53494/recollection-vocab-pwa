@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 import { TopHeader } from './TopHeader';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { SpeechErrorToast } from '../shared/SpeechErrorToast';
 
 export function AppLayout() {
   const online = useOnlineStatus();
@@ -30,6 +31,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-paper-off flex flex-col max-w-lg mx-auto">
       <TopHeader />
+      <SpeechErrorToast />
 
       {/* 离线横幅 */}
       {!online && (

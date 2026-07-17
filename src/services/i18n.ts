@@ -81,11 +81,6 @@ const translations: Record<string, Record<string, string>> = {
 
   /* ---- 设置 ---- */
   'settings.title':    { zh: '设置', en: 'Settings' },
-  'settings.api':      { zh: 'DeepSeek API Key', en: 'DeepSeek API Key' },
-  'settings.apiHint':  { zh: 'AI 批改功能已就绪。免费注册获取 Key：platform.deepseek.com', en: 'AI review is ready. Get a free key: platform.deepseek.com' },
-  'settings.apiReady': { zh: '✅ API Key 已配置', en: '✅ API Key Configured' },
-  'settings.change':   { zh: '更换', en: 'Change' },
-  'settings.local':    { zh: '仅保存在本地，不会上传', en: 'Stored locally only' },
   'settings.save':     { zh: '保存', en: 'Save' },
   'settings.saved':    { zh: '已保存 ✓', en: 'Saved ✓' },
   'settings.theme':    { zh: '主题', en: 'Theme' },

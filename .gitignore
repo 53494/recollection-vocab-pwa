@@ -1,8 +1,13 @@
 # 环境密钥文件（防止API密钥泄露上传GitHub）
 .env
 .env.*
+!.env.example
 recollection.env
 recollection.env.example
+worker/.dev.vars
+worker/.dev.vars.*
+!worker/.dev.vars.example
+worker/.wrangler/
 
 # 依赖文件夹
 node_modules/
