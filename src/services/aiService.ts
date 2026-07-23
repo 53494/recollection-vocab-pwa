@@ -2,7 +2,7 @@ import type { AIFeedback } from '../types/ai';
 
 const DEFAULT_AI_PROXY_URL = 'https://recollection-ai-proxy.894721114.workers.dev';
 const AI_PROXY_URL = (import.meta.env.VITE_AI_PROXY_URL || DEFAULT_AI_PROXY_URL).replace(/\/+$/, '');
-const REQUEST_TIMEOUT_MS = 35_000;
+const REQUEST_TIMEOUT_MS = 55_000;
 
 interface ErrorResponse {
   error?: string;
@@ -78,9 +78,14 @@ export async function checkTranslation(args: {
     }
 
     if (!response.ok) {
+      const fallbackMessages: Record<number, string> = {
+        502: 'AI 上游服务暂时不可用，请稍后重试',
+        503: 'AI 服务尚未就绪，请稍后重试',
+        504: 'AI 响应超时，请稍后重试',
+      };
       const message = typeof (data as ErrorResponse)?.error === 'string'
         ? (data as ErrorResponse).error!
-        : `AI 服务请求失败 (${response.status})`;
+        : fallbackMessages[response.status] ?? `AI 服务请求失败 (${response.status})`;
       throw new AIServiceError(response.status, message);
     }
 
@@ -90,7 +95,7 @@ export async function checkTranslation(args: {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new AIServiceError(504, 'AI 响应超时，请稍后重试');
     }
-    throw new AIServiceError(0, '无法连接 AI 服务，请检查网络后重试');
+    throw new AIServiceError(0, '无法连接 AI 服务入口，可能是当前网络无法访问代理地址');
   } finally {
     window.clearTimeout(timeout);
   }

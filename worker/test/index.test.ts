@@ -92,6 +92,27 @@ describe('AI review Worker', () => {
     expect(await response.json()).toEqual({ error: 'AI 服务认证失败，请联系管理员检查配置' });
   });
 
+  it('健康检查不调用 AI 上游', async () => {
+    const upstream = vi.spyOn(globalThis, 'fetch');
+    const response = await worker.fetch(new Request('https://worker.example/health', {
+      method: 'GET',
+      headers: { Origin: 'https://53494.github.io' },
+    }), env, ctx);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://53494.github.io');
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it('将普通上游连接失败转换为 502', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('fetch failed'));
+    const response = await worker.fetch(request(), env, ctx);
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: 'AI 上游连接失败，请稍后重试' });
+  });
+
   it('将上游超时转换为明确错误', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new DOMException('aborted', 'AbortError'));
     const response = await worker.fetch(request(), env, ctx);
@@ -117,5 +138,6 @@ describe('AI review Worker', () => {
     expect(response.status).toBe(204);
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://53494.github.io');
     expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
+    expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET, POST, OPTIONS');
   });
 });
