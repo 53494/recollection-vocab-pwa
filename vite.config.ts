@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'icon-192.svg'],
       manifest: {
         name: 'Recollection - 英语词汇学习',

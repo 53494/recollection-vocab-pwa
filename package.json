@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:docs": "tsc -b && vite build --outDir docs --emptyOutDir",
+    "build:docs": "node scripts/prepare-docs-assets.mjs && tsc -b && vite build --outDir docs --emptyOutDir=false",
     "preview": "vite preview",
     "test": "vitest run",
     "test:worker": "vitest run worker/test",
