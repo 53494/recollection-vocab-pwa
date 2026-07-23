@@ -1,1 +1,0 @@
-import{j as e}from"./index-C552PJMP.js";function s(){return e.jsx("div",{className:"flex flex-col gap-4 min-h-[60vh] items-center justify-center",children:e.jsx("p",{className:"text-ink-muted",children:"每月播客 — Phase 8 实现"})})}export{s as default};

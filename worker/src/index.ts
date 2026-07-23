@@ -25,6 +25,7 @@ const FIELD_LIMITS: Record<keyof ReviewRequestBody, number> = {
 };
 const WINDOW_MS = 60_000;
 const REQUESTS_PER_WINDOW = 20;
+const UPSTREAM_TIMEOUT_MS = 45_000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 function jsonResponse(body: unknown, status: number, origin?: string): Response {
@@ -120,7 +121,7 @@ async function handleReview(request: Request, env: Env, origin?: string): Promis
   if (typeof body === 'string') return jsonResponse({ error: body }, 400, origin);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25_000);
+  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
   try {
     const baseUrl = env.UPSTREAM_BASE_URL.replace(/\/+$/, '');
@@ -172,7 +173,11 @@ async function handleReview(request: Request, env: Env, origin?: string): Promis
     return jsonResponse(feedback, 200, origin);
   } catch (error) {
     const timedOut = error instanceof Error && error.name === 'AbortError';
-    return jsonResponse({ error: timedOut ? 'AI 响应超时，请重试' : '无法连接 AI 服务，请稍后重试' }, 504, origin);
+    return jsonResponse(
+      { error: timedOut ? 'AI 响应超时，请重试' : 'AI 上游连接失败，请稍后重试' },
+      timedOut ? 504 : 502,
+      origin,
+    );
   } finally {
     clearTimeout(timeout);
   }
@@ -192,12 +197,17 @@ export default {
         status: 204,
         headers: {
           'Access-Control-Allow-Origin': allowedOrigin,
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
           'Access-Control-Max-Age': '86400',
           'Vary': 'Origin',
         },
       });
+    }
+
+    if (url.pathname === '/health') {
+      if (request.method !== 'GET') return jsonResponse({ error: '仅支持 GET 请求' }, 405, allowedOrigin);
+      return jsonResponse({ ok: true }, 200, allowedOrigin);
     }
 
     if (url.pathname !== '/api/review') return jsonResponse({ error: '接口不存在' }, 404, allowedOrigin);
